@@ -1,5 +1,7 @@
 const { expect } = require("chai");
 const { ethers, waffle } = require("hardhat");
+const Promise = require("bluebird");
+
 
 let _NFT;
 let NFT;
@@ -25,11 +27,17 @@ const sendEth = (amt) => {
 };
 
 describe("Greeter", function () {
-  it("Sets current block time to DA start", async function () {
-    //Sets start time to 10 seconds in future.
-    const startTime = Math.floor(Date.now() / 1000) + 10;
-    await NFT.adjustDutchAuctionStartTime(startTime);
-    await setCurrentBlockTime(startTime);
+  it("Sets DA data", async function () {
+
+    await NFT.initializeAuctionData(
+      ethers.utils.parseEther("0.5"),
+      ethers.utils.parseEther("0.1"),
+      ethers.utils.parseEther("0.05"),
+      180,
+      Math.floor(Date.now() / 1000) - 2,
+      5,
+      7000
+    );
   });
 
   it("Should expect price to be 0.5", async function () {
@@ -72,7 +80,7 @@ describe("Greeter", function () {
     console.log({
       "Contract balance": (await provider.getBalance(NFT.address)).toString(),
       "User balance": (await provider.getBalance(owner.address)).toString(),
-      claims: await NFT.userToTokenBatchLength(owner.address),
+      claims: (await NFT.userToTokenBatches(owner.address)).length,
     });
 
     console.log("Refunding extra eth.");
@@ -81,7 +89,7 @@ describe("Greeter", function () {
     console.log({
       "Contract balance": (await provider.getBalance(NFT.address)).toString(),
       "User balance": (await provider.getBalance(owner.address)).toString(),
-      claims: await NFT.userToTokenBatchLength(owner.address),
+      claims: (await NFT.userToTokenBatches(owner.address)).length,
     });
   });
 });

@@ -1,7 +1,6 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 /*
@@ -35,6 +34,8 @@ contract MDDA is Ownable {
     //The quantity for DA.
     uint256 public DA_QUANTITY;
 
+    bool public DATA_SET;
+
     bool public INITIAL_FUNDS_WITHDRAWN;
 
     //Struct for storing batch price data.
@@ -46,7 +47,7 @@ contract MDDA is Ownable {
     //Token to token price data
     mapping(address => TokenBatchPriceData[]) public userToTokenBatchPriceData;
 
-    constructor(
+    function initializeAuctionData(
         uint256 _DAStartingPrice,
         uint256 _DAEndingPrice,
         uint256 _DADecrement,
@@ -54,26 +55,25 @@ contract MDDA is Ownable {
         uint256 _DAStartingTimestamp,
         uint256 _DAMaxQuantity,
         uint256 _DAQuantity
-    ) {
+    ) public onlyOwner {
+        require(!DATA_SET, "DA data has already been set.");
         DA_STARTING_PRICE = _DAStartingPrice;
         DA_ENDING_PRICE = _DAEndingPrice;
         DA_DECREMENT = _DADecrement;
         DA_DECREMENT_FREQUENCY = _DADecrementFrequency;
         DA_STARTING_TIMESTAMP = _DAStartingTimestamp;
-        DA_MAX_QUANTITY=_DAMaxQuantity;
+        DA_MAX_QUANTITY = _DAMaxQuantity;
         DA_QUANTITY = _DAQuantity;
+
+        DATA_SET = true;
     }
 
-    function adjustDutchAuctionStartTime(uint256 _DAStartingTimestamp) public onlyOwner {
-        DA_STARTING_TIMESTAMP = _DAStartingTimestamp;
-    }
-    
-    function userToTokenBatchLength(address user)
+    function userToTokenBatches(address user)
         public
         view
-        returns (uint256)
+        returns (TokenBatchPriceData[] memory)
     {
-        return userToTokenBatchPriceData[user].length;
+        return userToTokenBatchPriceData[user];
     }
 
     function currentPrice() public view returns (uint256) {
@@ -103,6 +103,8 @@ contract MDDA is Ownable {
     }
 
     function DAHook(uint128 _quantity, uint256 _totalSupply) internal {
+        require(DATA_SET, "DA data not set yet");
+
         uint256 _currentPrice = currentPrice();
 
         //Require enough ETH
@@ -111,7 +113,10 @@ contract MDDA is Ownable {
             "Did not send enough eth."
         );
 
-        require(_quantity > 0 && _quantity <= DA_MAX_QUANTITY, "Incorrect quantity!");
+        require(
+            _quantity > 0 && _quantity <= DA_MAX_QUANTITY,
+            "Incorrect quantity!"
+        );
 
         require(
             block.timestamp >= DA_STARTING_TIMESTAMP,
@@ -171,9 +176,7 @@ contract MDDA is Ownable {
 
         INITIAL_FUNDS_WITHDRAWN = true;
 
-        (bool succ, ) = payable(msg.sender).call{
-            value: initialFunds
-        }("");
+        (bool succ, ) = payable(msg.sender).call{value: initialFunds}("");
 
         require(succ, "transfer failed");
     }
@@ -184,9 +187,7 @@ contract MDDA is Ownable {
 
         uint256 finalFunds = address(this).balance;
 
-        (bool succ, ) = payable(msg.sender).call{
-            value: finalFunds
-        }("");
+        (bool succ, ) = payable(msg.sender).call{value: finalFunds}("");
         require(succ, "transfer failed");
     }
 }
