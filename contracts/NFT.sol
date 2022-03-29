@@ -23,13 +23,13 @@ DA_QUANTITY = 7000
 contract NFT is Ownable, ERC721A, MDDA {
     constructor()
         ERC721A("NFT", "NFT")
-        MDDA(0.5 ether, 0.1 ether, 0.05 ether, 180, 1648080000, 5, 7000)
+        MDDA(0.5 ether, 0.1 ether, 0.05 ether, 180, 0, 5, 7000)
     {}
 
     function mintDutchAuction(uint8 _quantity) public payable {
         DAHook(_quantity, totalSupply());
 
         //Mint the quantity
-        _safeMint(msg.sender, quantity);
+        _safeMint(msg.sender, _quantity);
     }
 }

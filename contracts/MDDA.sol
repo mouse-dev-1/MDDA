@@ -64,6 +64,18 @@ contract MDDA is Ownable {
         DA_QUANTITY = _DAQuantity;
     }
 
+    function adjustDutchAuctionStartTime(uint256 _DAStartingTimestamp) public onlyOwner {
+        DA_STARTING_TIMESTAMP = _DAStartingTimestamp;
+    }
+    
+    function userToTokenBatchLength(address user)
+        public
+        view
+        returns (uint256)
+    {
+        return userToTokenBatchPriceData[user].length;
+    }
+
     function currentPrice() public view returns (uint256) {
         require(
             block.timestamp >= DA_STARTING_TIMESTAMP,
