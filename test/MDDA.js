@@ -25,7 +25,7 @@ const sendEth = (amt) => {
   return { value: ethers.utils.parseEther(amt) };
 };
 
-describe("Greeter", function () {
+describe("Tests", function () {
   it("Sets DA data", async function () {
     await NFT.initializeAuctionData(
       ethers.utils.parseEther("0.5"),
