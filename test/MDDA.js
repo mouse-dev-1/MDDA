@@ -2,7 +2,6 @@ const { expect } = require("chai");
 const { ethers, waffle } = require("hardhat");
 const Promise = require("bluebird");
 
-
 let _NFT;
 let NFT;
 
@@ -28,7 +27,6 @@ const sendEth = (amt) => {
 
 describe("Greeter", function () {
   it("Sets DA data", async function () {
-
     await NFT.initializeAuctionData(
       ethers.utils.parseEther("0.5"),
       ethers.utils.parseEther("0.1"),
@@ -41,7 +39,6 @@ describe("Greeter", function () {
   });
 
   it("Should expect price to be 0.5", async function () {
-    console.log();
     expect((await NFT.currentPrice()).toString()).to.equal(
       "500000000000000000"
     );
@@ -91,5 +88,10 @@ describe("Greeter", function () {
       "User balance": (await provider.getBalance(owner.address)).toString(),
       claims: (await NFT.userToTokenBatches(owner.address)).length,
     });
+  });
+
+  it("Withdraws ETH as owner", async function () {
+    console.log("Withdrawing eth.");
+    await NFT.connect(owner).withdrawInitialFunds();
   });
 });

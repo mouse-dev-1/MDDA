@@ -172,6 +172,7 @@ contract MDDA is Ownable {
         );
         require(DA_FINAL_PRICE > 0, "DA has not finished!");
 
+        //Only pull the amount of ether that is the final price times how many were bought. This leaves room for refunds until final withdraw.
         uint256 initialFunds = DA_QUANTITY * DA_FINAL_PRICE;
 
         INITIAL_FUNDS_WITHDRAWN = true;
