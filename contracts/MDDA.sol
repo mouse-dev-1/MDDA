@@ -55,7 +55,7 @@ contract MDDA is Ownable {
         uint256 _DAStartingTimestamp,
         uint256 _DAMaxQuantity,
         uint256 _DAQuantity
-    ) public onlyOwner {
+    ) external payable onlyOwner {
         require(!DATA_SET, "DA data has already been set.");
         DA_STARTING_PRICE = _DAStartingPrice;
         DA_ENDING_PRICE = _DAEndingPrice;
@@ -119,11 +119,6 @@ contract MDDA is Ownable {
         );
 
         require(
-            block.timestamp >= DA_STARTING_TIMESTAMP,
-            "DA has not started!"
-        );
-
-        require(
             _totalSupply + _quantity <= DA_QUANTITY,
             "Max supply for DA reached!"
         );
@@ -138,7 +133,7 @@ contract MDDA is Ownable {
         );
     }
 
-    function refundExtraETH() public {
+    function refundExtraETH() external {
         require(DA_FINAL_PRICE > 0, "Dutch action must be over!");
 
         uint256 totalRefund;
@@ -165,7 +160,7 @@ contract MDDA is Ownable {
         payable(msg.sender).transfer(totalRefund);
     }
 
-    function withdrawInitialFunds() public onlyOwner {
+    function withdrawInitialFunds() external payable onlyOwner {
         require(
             !INITIAL_FUNDS_WITHDRAWN,
             "Initial funds have already been withdrawn."
@@ -182,7 +177,7 @@ contract MDDA is Ownable {
         require(succ, "transfer failed");
     }
 
-    function withdrawFinalFunds() public onlyOwner {
+    function withdrawFinalFunds() external payable onlyOwner {
         //Require this is 1 week after DA Start.
         require(block.timestamp >= DA_STARTING_TIMESTAMP + 604800);
 
