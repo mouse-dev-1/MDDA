@@ -6,7 +6,7 @@ import "erc721a/contracts/ERC721A.sol";
 import "./MDDA.sol";
 
 contract NFT is Ownable, ERC721A, MDDA {
-    constructor() ERC721A("NFT", "NFT") {}
+    constructor() payable ERC721A("NFT", "NFT") {}
 
     function mintDutchAuction(uint8 _quantity) external payable {
         DAHook(_quantity, totalSupply());
