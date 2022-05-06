@@ -13,6 +13,9 @@ Initial version has no owner functions to not allow for owner foul play.
 
 Written by: mousedev.eth
 
+Modified by: @NftDoyler
+    Made the withdrawal methods virtual, to allow for custom withdraws.
+
 */
 
 contract MDDA is Ownable {
@@ -165,13 +168,7 @@ contract MDDA is Ownable {
         payable(msg.sender).transfer(totalRefund);
     }
 
-    function withdrawInitialFunds() public onlyOwner {
-        require(
-            !INITIAL_FUNDS_WITHDRAWN,
-            "Initial funds have already been withdrawn."
-        );
-        require(DA_FINAL_PRICE > 0, "DA has not finished!");
-
+    function withdrawInitialFunds() public virtual onlyOwner initialWithdraw {
         //Only pull the amount of ether that is the final price times how many were bought. This leaves room for refunds until final withdraw.
         uint256 initialFunds = DA_QUANTITY * DA_FINAL_PRICE;
 
@@ -182,13 +179,22 @@ contract MDDA is Ownable {
         require(succ, "transfer failed");
     }
 
-    function withdrawFinalFunds() public onlyOwner {
-        //Require this is 1 week after DA Start.
-        require(block.timestamp >= DA_STARTING_TIMESTAMP + 604800);
-
+    function withdrawFinalFunds() public virtual onlyOwner finalWithdraw {
         uint256 finalFunds = address(this).balance;
 
         (bool succ, ) = payable(msg.sender).call{value: finalFunds}("");
         require(succ, "transfer failed");
+    }
+
+    modifier initialWithdraw {
+        require(!INITIAL_FUNDS_WITHDRAWN, "Initial funds already withdrawn.");
+        require(DA_FINAL_PRICE > 0, "DA hasn't finished");
+        _;
+    }
+
+    modifier finalWithdraw {
+        //Require this is 1 week after DA Start.
+        require(block.timestamp >= DA_STARTING_TIMESTAMP + 604800);
+        _;
     }
 }
